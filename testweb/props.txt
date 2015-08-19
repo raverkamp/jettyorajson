@@ -4,8 +4,9 @@
 port=9000
 static.a.dir=html
 static.a.wdir=/html
-log4jconfig=
 
 dburl=jdbc:oracle:thin:@localhost:11521:xe
 realm=OracleDB
+procedures=procedures.txt
 
+log4jconfig=

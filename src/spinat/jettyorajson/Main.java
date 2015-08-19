@@ -26,7 +26,7 @@ public class Main {
             throw new RuntimeException("Expecting one argument, the name of the configuration file");
         }
         String propFileName = args[0];
-        java.util.Properties props = new java.util.Properties();
+        
         File pf = new File(propFileName);
         File apf = pf.getAbsoluteFile();
         if (!apf.canRead()) {
@@ -37,6 +37,7 @@ public class Main {
         msg("setting user.dir to " + dpf.toString());
         System.setProperty("user.dir", dpf.toString());
 
+        java.util.Properties props = new java.util.Properties();
         FileReader fr = new FileReader(apf);
         props.load(fr);
 
@@ -75,6 +76,17 @@ public class Main {
 
          holder.setInitParameter("dburl",  props.getProperty("dburl"));
          holder.setInitParameter("realm",  props.getProperty("realm"));
+         String proceduresFileName = props.getProperty("procedures");
+         File proceduresFile = new File(proceduresFileName);
+         String a;
+         if (proceduresFile.isAbsolute()) {
+             a = proceduresFile.getCanonicalPath();
+         } else {
+             a = dpf.getCanonicalPath()+"/" + proceduresFile.getName();
+         }
+         
+         holder.setInitParameter("procedures",a);
+         
          handler.addServletWithMapping(holder, "/orajson/*");
          handlers.addHandler(handler);
          
