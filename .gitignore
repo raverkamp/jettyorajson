@@ -6,3 +6,5 @@
 /libs/ojdbc6_g.jar
 /libs/servlet-api.jar
 /libs/ucp.jar
+/dist/
+/libs/json_simple-1.1.jar

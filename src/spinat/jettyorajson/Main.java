@@ -1,14 +1,11 @@
 package spinat.jettyorajson;
+
 import java.io.File;
 import java.io.FileReader;
-import java.io.IOException;
 import java.net.URL;
 import java.util.HashSet;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+
 import org.apache.log4j.PropertyConfigurator;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.ContextHandler;
@@ -16,9 +13,10 @@ import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+
 public class Main {
-    
-  private static void msg(String s) {
+
+    private static void msg(String s) {
         System.out.println("### " + s);
     }
 
@@ -73,20 +71,13 @@ public class Main {
         // on a given context path.
 
         // !! This is a raw Servlet, not a servlet that has been configured through a web.xml or anything like that !!
-      /*  ServletHolder holder = new ServletHolder(com.prism.ServletWrapper.class);
+         ServletHolder holder = new ServletHolder(OraJsonServlet.class);
 
-        String prismconf = props.getProperty("prismconf", "prism.xconf");
-        File pc = new File(prismconf).getAbsoluteFile();
-        if (pc.canRead()) {
-            holder.setInitParameter("properties", pc.toString());
-        } else {
-            throw new RuntimeException("can not read config file: " + pc.toString());
-        }
-        msg("dbprism config " + pc.toString());
-        String dads = props.getProperty("dads", "/dads");
-        handler.addServletWithMapping(holder, dads + "/*");
-        handlers.addHandler(handler);
-*/
+         holder.setInitParameter("dburl",  props.getProperty("dburl"));
+         holder.setInitParameter("realm",  props.getProperty("realm"));
+         handler.addServletWithMapping(holder, "/orajson/*");
+         handlers.addHandler(handler);
+         
         HashSet<String> set = new HashSet<>();
         for (String s : props.stringPropertyNames()) {
             if (s.startsWith("static.")) {
