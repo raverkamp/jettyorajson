@@ -43,6 +43,9 @@ OK: decision dates are formatted as strings:
 "2015-12-04 00:00:00" or "2015-12-04". Both are accepted as input and the first 
 is returned to caller.
 
-
+* How to get the Json endpoint to the client
+The client will get some HTML page from the server.
+How to get to the Json service?
+In the absolute path /json?
 
 

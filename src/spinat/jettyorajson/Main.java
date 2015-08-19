@@ -2,9 +2,9 @@ package spinat.jettyorajson;
 
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
 import java.net.URL;
 import java.util.HashSet;
-
 
 import org.apache.log4j.PropertyConfigurator;
 import org.eclipse.jetty.server.Server;
@@ -26,7 +26,7 @@ public class Main {
             throw new RuntimeException("Expecting one argument, the name of the configuration file");
         }
         String propFileName = args[0];
-        
+
         File pf = new File(propFileName);
         File apf = pf.getAbsoluteFile();
         if (!apf.canRead()) {
@@ -71,26 +71,30 @@ public class Main {
         // Passing in the class for the servlet allows jetty to instantite an instance of that servlet and mount it
         // on a given context path.
 
-        // !! This is a raw Servlet, not a servlet that has been configured through a web.xml or anything like that !!
-         ServletHolder holder = new ServletHolder(OraJsonServlet.class);
+        HashSet<String> dbset = new HashSet<>();
+        for (String s : props.stringPropertyNames()) {
+            if (s.startsWith("db.")) {
+                String part = s.substring("db.".length());
+                if (part.equals("")) {
+                    continue;
+                }
+                int p = part.indexOf(".");
+                if (p == 0) {
+                    continue;
+                }
+                if (p < 0) {
+                    dbset.add(part);
+                } else {
+                    dbset.add(part.substring(0, p));
+                }
+            }
+        }
+        for (String db : dbset) {
+            setUpDbServlet(handler, dpf, db, props);
+        }
+        handlers.addHandler(handler);
 
-         holder.setInitParameter("dburl",  props.getProperty("dburl"));
-         holder.setInitParameter("realm",  props.getProperty("realm"));
-         String proceduresFileName = props.getProperty("procedures");
-         File proceduresFile = new File(proceduresFileName);
-         String a;
-         if (proceduresFile.isAbsolute()) {
-             a = proceduresFile.getCanonicalPath();
-         } else {
-             a = dpf.getCanonicalPath()+"/" + proceduresFile.getName();
-         }
-         
-         holder.setInitParameter("procedures",a);
-         
-         handler.addServletWithMapping(holder, "/orajson/*");
-         handlers.addHandler(handler);
-         
-        HashSet<String> set = new HashSet<>();
+        HashSet<String> folderset = new HashSet<>();
         for (String s : props.stringPropertyNames()) {
             if (s.startsWith("static.")) {
                 String part = s.substring("static.".length());
@@ -102,13 +106,13 @@ public class Main {
                     continue;
                 }
                 if (p < 0) {
-                    set.add(part);
+                    folderset.add(part);
                 } else {
-                    set.add(part.substring(0, p));
+                    folderset.add(part.substring(0, p));
                 }
             }
         }
-        for (String staticc : set) {
+        for (String staticc : folderset) {
             String prefix = "static." + staticc + ".";
             String dir = props.getProperty(prefix + "dir", "");
             if (dir.equals("")) {
@@ -141,5 +145,29 @@ public class Main {
         // See "http://docs.oracle.com/javase/1.5.0/docs/api/java/lang/Thread.html#join()" for more details.
         server.start();
         server.join();
+    }
+
+    static void setUpDbServlet(ServletHandler handler, File dpf, String name, java.util.Properties props) throws IOException {
+        String prefix = "db." + name + ".";
+        String dburl = props.getProperty(prefix + "dburl", "");
+        String realm = props.getProperty(prefix + "realm", "");
+        String wpath = props.getProperty(prefix + "path", "");
+        String proceduresFileName = props.getProperty(prefix + "procedures", "");
+
+        ServletHolder holder = new ServletHolder(OraJsonServlet.class);
+
+        holder.setInitParameter("dburl", dburl);
+        holder.setInitParameter("realm", realm);
+        File proceduresFile = new File(proceduresFileName);
+        String a;
+        if (proceduresFile.isAbsolute()) {
+            a = proceduresFile.getCanonicalPath();
+        } else {
+            a = dpf.getCanonicalPath() + "/" + proceduresFile.getName();
+        }
+        holder.setInitParameter("procedures", a);
+
+        handler.addServletWithMapping(holder, wpath);
+
     }
 }

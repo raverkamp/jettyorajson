@@ -2,11 +2,12 @@
 # http://localhost:9000/html/index.html
 
 port=9000
+
 static.a.dir=html
 static.a.wdir=/html
 
-dburl=jdbc:oracle:thin:@localhost:11521:xe
-realm=OracleDB
-procedures=procedures.txt
-
+db.a.dburl=jdbc:oracle:thin:@localhost:11521:xe
+db.a.realm=OracleDB
+db.a.procedures=procedures.txt
+db.a.path=/orajson
 log4jconfig=

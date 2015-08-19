@@ -1,6 +1,5 @@
 package spinat.jettyorajson;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -8,25 +7,21 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import oracle.jdbc.OracleConnection;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.ParseException;
 
 public class OraJsonServlet extends HttpServlet {
 
     String dburl = null;
-    Map<String,String> procedures;
-    
+    Map<String, String> procedures;
+
     @Override
     public void init() {
         this.dburl = getInitParameter("dburl");
@@ -53,10 +48,10 @@ public class OraJsonServlet extends HttpServlet {
             JSONObject m = (JSONObject) p.parse(jsonstring);
             String proc = (String) m.get("procedure");
             String realproc = this.procedures.get(proc);
-            if (realproc==null) {
+            if (realproc == null) {
                 throw new RuntimeException("unknown procedure: " + proc);
             }
-            
+
             JSONObject args = (JSONObject) m.get("arguments");
             Object res = new ProcedureCaller(con).call(realproc, args);
             mo = new JSONObject();

@@ -3,8 +3,6 @@ package spinat.jettyorajson;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.xml.bind.DatatypeConverter;
 
 public class Util {
@@ -18,7 +16,7 @@ public class Util {
      Date result2 = df2.parse(string2);
      */
 
-    public static  Date stringToDate(String s) {
+    public static Date stringToDate(String s) {
         if (s == null || s.equals("")) {
             return null;
         }
@@ -44,19 +42,11 @@ public class Util {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         return sdf.format(d);
     }
-    /*
-    byte[] message = "hello world".getBytes("UTF-8");
-String encoded = DatatypeConverter.printBase64Binary(message);
-byte[] decoded = DatatypeConverter.parseBase64Binary(encoded);
 
-System.out.println(encoded);
-System.out.println(new String(decoded, "UTF-8"));
-*/
-    
     public static String encodeBase64(byte[] b) {
         return DatatypeConverter.printBase64Binary(b);
     }
-    
+
     public static byte[] decodeBase64(String s) {
         return DatatypeConverter.parseBase64Binary(s);
     }
