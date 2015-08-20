@@ -7,6 +7,7 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -21,10 +22,12 @@ public class OraJsonServlet extends HttpServlet {
 
     String dburl = null;
     Map<String, String> procedures;
+    String current_schema;
 
     @Override
     public void init() {
         this.dburl = getInitParameter("dburl");
+        this.current_schema = getInitParameter("current_schema");
         try {
             this.procedures = loadProcedures(getInitParameter("procedures"));
         } catch (IOException ex) {
@@ -37,39 +40,51 @@ public class OraJsonServlet extends HttpServlet {
             throws ServletException, IOException {
         String auth = request.getHeader("Authorization");
         OracleConnection con = authorize(auth);
-        if (con == null) {
-            response.setHeader("WWW-Authenticate", "BASIC realm=\"" + getInitParameter("realm") + "\"");
-            response.sendError(response.SC_UNAUTHORIZED);
-        }
-        String jsonstring = request.getParameter("data");
-        org.json.simple.parser.JSONParser p = new org.json.simple.parser.JSONParser();
-        JSONObject mo = null;
         try {
-            JSONObject m = (JSONObject) p.parse(jsonstring);
-            String proc = (String) m.get("procedure");
-            String realproc = this.procedures.get(proc);
-            if (realproc == null) {
-                throw new RuntimeException("unknown procedure: " + proc);
+            if (con == null) {
+                response.setHeader("WWW-Authenticate", "BASIC realm=\"" + getInitParameter("realm") + "\"");
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+                return;
+            }
+            String jsonstring = request.getParameter("data");
+            org.json.simple.parser.JSONParser p = new org.json.simple.parser.JSONParser();
+            JSONObject mo = null;
+            try {
+                JSONObject m = (JSONObject) p.parse(jsonstring);
+                String proc = (String) m.get("procedure");
+                String realproc = this.procedures.get(proc);
+                if (realproc == null) {
+                    throw new RuntimeException("unknown procedure: " + proc);
+                }
+
+                JSONObject args = (JSONObject) m.get("arguments");
+                Object res = new ProcedureCaller(con).call(realproc, args);
+                mo = new JSONObject();
+                mo.put("result", res);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
 
-            JSONObject args = (JSONObject) m.get("arguments");
-            Object res = new ProcedureCaller(con).call(realproc, args);
-            mo = new JSONObject();
-            mo.put("result", res);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-        response.setBufferSize(100000);
-        response.setContentType("text/text;charset=UTF-8");
-        try (PrintWriter out = response.getWriter()) {
-
-            out.append(mo.toString());
+            response.setBufferSize(100000);
+            response.setContentType("application/json;charset=UTF-8");
+            try (PrintWriter out = response.getWriter()) {
+                out.append(mo.toString());
+            }
+        } finally {
+            try {
+                con.close();
+            } catch (Exception e) {
+                e.printStackTrace(System.err);
+            }
         }
     }
 
     OracleConnection getOracleConnection(String user, String pw) throws SQLException {
         OracleConnection connection = (OracleConnection) DriverManager.getConnection(this.dburl, user, pw);
+        if (this.current_schema != null) {
+            Statement s = connection.createStatement();
+            s.execute("ALTER SESSION SET CURRENT_SCHEMA=" + this.current_schema);
+        }
         return connection;
     }
 

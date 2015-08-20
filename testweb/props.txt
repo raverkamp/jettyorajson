@@ -9,5 +9,7 @@ static.a.wdir=/html
 db.a.dburl=jdbc:oracle:thin:@localhost:11521:xe
 db.a.realm=OracleDB
 db.a.procedures=procedures.txt
+db.a.current_schema=roland1
 db.a.path=/orajson
+
 log4jconfig=

@@ -152,12 +152,17 @@ public class Main {
         String dburl = props.getProperty(prefix + "dburl", "");
         String realm = props.getProperty(prefix + "realm", "");
         String wpath = props.getProperty(prefix + "path", "");
+        String current_schema = props.getProperty(prefix + "current_schema", "");
+        if (current_schema == null || current_schema.equals("")) {
+            current_schema = null;
+        }
         String proceduresFileName = props.getProperty(prefix + "procedures", "");
 
         ServletHolder holder = new ServletHolder(OraJsonServlet.class);
 
         holder.setInitParameter("dburl", dburl);
         holder.setInitParameter("realm", realm);
+        holder.setInitParameter("current_schema", current_schema);
         File proceduresFile = new File(proceduresFileName);
         String a;
         if (proceduresFile.isAbsolute()) {
