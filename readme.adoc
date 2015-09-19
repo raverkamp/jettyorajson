@@ -74,7 +74,8 @@ are interpreted relative to the location of the properties file.
 
 .Properties 
 - +port+ the port number under which to listen
-- +log4jconfig+ the name of the file with log4j configuration needed by Jetty
+- +log4jconfig+ the name of the file with log4j configuration needed by Jetty.
+If this is empty, the file "log4j.properties" is used.
 - +static.X.dir+, +static.X.wdir+ the directories that are served as static files
 the property defines the directory on disk to serve. The corresponding wdir property
 defines the directory under which to serve. X can be replaced by a suitable name.
