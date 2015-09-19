@@ -171,7 +171,7 @@ public class Main {
             a = dpf.getCanonicalPath() + "/" + proceduresFile.getName();
         }
         holder.setInitParameter("procedures", a);
-
+        msg("mounting under path: " + wpath);
         handler.addServletWithMapping(holder, wpath);
 
     }

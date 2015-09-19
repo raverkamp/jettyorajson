@@ -25,15 +25,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import oracle.jdbc.OracleCallableStatement;
 import oracle.jdbc.OracleConnection;
 import oracle.jdbc.OracleTypes;
@@ -397,12 +393,12 @@ public final class ProcedureCaller {
             if (o instanceof Map) {
                 Map m = (Map) o;
                 for (Field f : this.fields) {
-                    Object x;
-                    if (m.containsKey(f.name)) {
-                        x = m.get(f.name);
+                    String fname = f.name.toLowerCase();
+                    if (m.containsKey(fname)) {
+                        Object x = m.get(fname);
                         f.type.fillArgArrays(a, x);
                     } else {
-                        throw new ConversionException("slot not found: " + f.name);
+                        throw new ConversionException("slot not found: " + fname);
                     }
                 }
             }
@@ -413,7 +409,7 @@ public final class ProcedureCaller {
             HashMap<String, Object> m = new HashMap<>();
             for (Field f : this.fields) {
                 Object o = f.type.readFromResArrays(a);
-                m.put(f.name, o);
+                m.put(f.name.toLowerCase(), o);
             }
             return m;
         }
@@ -557,7 +553,7 @@ public final class ProcedureCaller {
                     } else {
                         throw new Error("unknwon column type: " + t);
                     }
-                    m.put(colnames.get(i), o);
+                    m.put(colnames.get(i).toLowerCase(), o);
                 }
                 l.add(m);
             }
@@ -995,7 +991,6 @@ public final class ProcedureCaller {
         sb.append("?:= ad;\n");
         sb.append("dbms_output.put_line('f '||to_char(sysdate,'mi:ss'));\n");
         sb.append("end;\n");
-        System.out.println(sb.toString());
         return sb.toString();
     }
 
@@ -1023,11 +1018,12 @@ public final class ProcedureCaller {
                 if (arg.direction.equals("OUT")) {
                     continue;
                 }
-                if (args.containsKey(arg.name)) {
-                    Object o = args.get(arg.name);
+                String arg_name = arg.name.toLowerCase();
+                if (args.containsKey(arg_name)) {
+                    Object o = args.get(arg_name);
                     arg.type.fillArgArrays(aa, o);
                 } else {
-                    throw new ConversionException("could not find argument " + arg.name);
+                    throw new ConversionException("could not find argument " + arg_name);
                 }
             }
 
@@ -1065,7 +1061,7 @@ public final class ProcedureCaller {
                 continue;
             }
             Object o = arg.type.readFromResArrays(ra);
-            res.put(arg.name, o);
+            res.put(arg.name.toLowerCase(), o);
         }
         return res;
     }

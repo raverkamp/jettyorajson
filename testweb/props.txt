@@ -1,7 +1,7 @@
 # this should work:
 # http://localhost:9000/html/index.html
 
-port=9000
+port=8000
 
 static.a.dir=html
 static.a.wdir=/html

@@ -20,14 +20,17 @@ import org.json.simple.JSONObject;
 
 public class OraJsonServlet extends HttpServlet {
 
+    // these are the init parameters for the servlet
     String dburl = null;
     Map<String, String> procedures;
     String current_schema;
+    String realm;
 
     @Override
     public void init() {
         this.dburl = getInitParameter("dburl");
         this.current_schema = getInitParameter("current_schema");
+        this.realm = getInitParameter("realm");
         try {
             this.procedures = loadProcedures(getInitParameter("procedures"));
         } catch (IOException ex) {
@@ -42,7 +45,7 @@ public class OraJsonServlet extends HttpServlet {
         OracleConnection con = authorize(auth);
         try {
             if (con == null) {
-                response.setHeader("WWW-Authenticate", "BASIC realm=\"" + getInitParameter("realm") + "\"");
+                response.setHeader("WWW-Authenticate", "BASIC realm=\"" + this.realm + "\"");
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
                 return;
             }

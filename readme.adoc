@@ -1,0 +1,94 @@
+JettyOraJson
+============
+
+The main part of JettyOraJson is a Java servlet whcih translates JSON HTTP calls
+to Oracle PL/SQL proecdure call. The arguments of procedures can be complex types,
+like records and tables.
+This servlet is embedded into a a simple application
+which hosts the HTTP server Jetty. The HTTP server runs instances of this servlet
+ and a simple static file server. 
+This is more a proof of concept than a real application. 
+Exposing your Oracle database to the internet via a servlet is
+a bit scary. Still is this what the Orcale PL/SQL Web Toolkit does.
+For real production use one would use another webserver and use HTTPS.
+
+
+The servlet is called with a HTTP post method,
+there is one parameter "data". The value for this parameter is a JSON encoded 
+Javascript object. 
+
+.The Javascript object has the follwoing fields:
+procedure::
+this determines the procedure to call, there is a mapping form these names
+to the real name of the oracle procedures, i.e. each procedure to be called
+has to be explicitly published. It is not possible to call functions.
+Reasoning: functions are often made public for the only reason to be used 
+in SQL statements.
+
+arguments::
+the arguments, an object. The arguments are passed by name.
+
+.The text returned from the post method is a JSON object with the fields:
+result::
+ if everything was succesfull the out paramters in an object
+
+error::
+if there was an exception, some error message
+
+
+Translation of types
+--------------------
+
+.The translation for PL/SQL to Javascript
+- number -> float or integer
+- varchar2 -> string
+- boolean -> boolean
+- null -> null
+- date -> string (format yyyy-mm-dd hh24:mi:ss)
+- record -> object
+- table (non associative -> array
+
+.The translation for  Javascript to PL/SQL
+- float or integer -> number
+- string varchar2 -> string
+- boolean -> boolean
+- null -> null
+- string (format "yyyy-mm-dd hh24:mi:ss" or "yyyy-mm-dd") -> date
+- object -> record
+- array -> table (non associative)
+
+The fields of PL/SQL records are mapped to lower case slot names in Javascript.
+
+Autentication
+-------------
+Basic Authentication. After all this is an experiment. 
+The user must have execute rights on the called procedure.
+It is possible to define a current schema, so there is no need for synonyms.
+
+Configuration File
+------------------
+
+The application taks as argument the name of a configuration file,
+which is in the format of java properties file. All properties that name files
+are interpreted relative to the location of the properties file.
+
+.Properties 
+- +port+ the port number under which to listen
+- +log4jconfig+ the name of the file with log4j configuration needed by Jetty
+- +static.X.dir+, +static.X.wdir+ the directories that are served as static files
+the property defines the directory on disk to serve. The corresponding wdir property
+defines the directory under which to serve. X can be replaced by a suitable name.
+It must (obviously) not contain a "." and the whole string must be a allowed 
+property name.
+- +db.X.dburl+ the url for the database connection named X
+- +db.X.realm+ the realm for X, authentication is done with basic authentication
+- +db.X.procedures+ the file the exported procedures
+- +db.X.current_schema+ optional schema for procedure lookup, no need for synonyms!
+- +db.X.path+ the path under which to export the the procedures
+
+The procedures that are exported are defined in another properties file, named
+by the +db.X.procedures+ property.
+
+Each property defines an exported procedure, the property name defines 
+the exported name. The value defines the database procedure.
+ 
