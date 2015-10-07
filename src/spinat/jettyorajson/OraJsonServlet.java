@@ -43,12 +43,13 @@ public class OraJsonServlet extends HttpServlet {
             throws ServletException, IOException {
         String auth = request.getHeader("Authorization");
         OracleConnection con = authorize(auth);
+
+        if (con == null) {
+            response.setHeader("WWW-Authenticate", "BASIC realm=\"" + this.realm + "\"");
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+            return;
+        }
         try {
-            if (con == null) {
-                response.setHeader("WWW-Authenticate", "BASIC realm=\"" + this.realm + "\"");
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-                return;
-            }
             String jsonstring = request.getParameter("data");
             org.json.simple.parser.JSONParser p = new org.json.simple.parser.JSONParser();
             JSONObject mo = null;
@@ -70,6 +71,7 @@ public class OraJsonServlet extends HttpServlet {
 
             response.setBufferSize(100000);
             response.setContentType("application/json;charset=UTF-8");
+            response.setCharacterEncoding("UTF-8");
             try (PrintWriter out = response.getWriter()) {
                 out.append(mo.toString());
             }
