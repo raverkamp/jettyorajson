@@ -38,6 +38,19 @@ public class OraJsonServlet extends HttpServlet {
         }
     }
 
+    void errorReply(HttpServletResponse response, String txt) throws IOException {
+        response.setStatus(400);
+        response.setContentType("text/text;charset=UTF-8");
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().append("error in request: " + txt);
+    }
+
+    // if the input is correct, a post parameter data which is JSON object 
+    // which contains two slots, procedure argument
+    // then in case of error return status 200 with an JSON object which conatins a slot error with some messae
+    // otherwise return status 400 with some error message
+    // reasoning: if the format of the request is correct, the client is expected to
+    // analyse the response correctly
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -51,22 +64,44 @@ public class OraJsonServlet extends HttpServlet {
         }
         try {
             String jsonstring = request.getParameter("data");
-            org.json.simple.parser.JSONParser p = new org.json.simple.parser.JSONParser();
-            JSONObject mo = null;
+            if (jsonstring == null || jsonstring.isEmpty()) {
+                errorReply(response, "expecting post parameter \"data\" with JSON data");
+                return;
+            }
+            JSONObject m;
             try {
-                JSONObject m = (JSONObject) p.parse(jsonstring);
-                String proc = (String) m.get("procedure");
-                String realproc = this.procedures.get(proc);
-                if (realproc == null) {
-                    throw new RuntimeException("unknown procedure: " + proc);
-                }
-
-                JSONObject args = (JSONObject) m.get("arguments");
+                org.json.simple.parser.JSONParser p = new org.json.simple.parser.JSONParser();
+                m = (JSONObject) p.parse(jsonstring);
+            } catch (Exception ex) {
+                errorReply(response, "value of post parameter \"data\" must be a JSON object");
+                return;
+            }
+            Object o = m.get("procedure");
+            if (o == null || !(o instanceof String)) {
+                errorReply(response, "expecting a slot \"procedure\" which is a string value in JSON data");
+                return;
+            }
+            String proc = (String) m.get("procedure");
+            String realproc = this.procedures.get(proc);
+            if (realproc == null) {
+                errorReply(response, "unknown procedure: " + proc
+                        + ", procedure must be added to file " + getInitParameter("procedures"));
+                return;
+            }
+            Object o2 = m.get("arguments");
+            if (o2 == null || !(o2 instanceof JSONObject)) {
+                errorReply(response, "expecting a slot \"arguments\" which is a Object value in JSON data");
+                return;
+            }
+            JSONObject args = (JSONObject) o2;
+            JSONObject mo = new JSONObject();
+            try {
                 Object res = new ProcedureCaller(con).call(realproc, args);
                 mo = new JSONObject();
                 mo.put("result", res);
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                mo.put("error", e.toString());
+                e.printStackTrace(System.err);
             }
 
             response.setBufferSize(100000);
