@@ -152,6 +152,18 @@ public class Main {
         String dburl = props.getProperty(prefix + "dburl", "");
         String realm = props.getProperty(prefix + "realm", "");
         String wpath = props.getProperty(prefix + "path", "");
+        String dbuser = props.getProperty(prefix +"dbuser","");
+        String dbpassword = props.getProperty(prefix +"dbpassword","");
+        if (realm.equals("")) {
+            if (dbuser.equals("")||dbpassword.equals("")) {
+                throw new RuntimeException("if no realm is given then dbuser and dnpassowr dmust be given");
+            }
+        } else {
+            if (!dbuser.equals("")||!dbpassword.equals("")) {
+                throw new RuntimeException("if realm is given dbuser and dbpassword must be empty");
+            }
+        }
+        
         String current_schema = props.getProperty(prefix + "current_schema", "");
         if (current_schema == null || current_schema.equals("")) {
             current_schema = null;
@@ -159,10 +171,11 @@ public class Main {
         String proceduresFileName = props.getProperty(prefix + "procedures", "");
 
         ServletHolder holder = new ServletHolder(OraJsonServlet.class);
-
         holder.setInitParameter("dburl", dburl);
         holder.setInitParameter("realm", realm);
         holder.setInitParameter("current_schema", current_schema);
+        holder.setInitParameter("dbuser",dbuser);
+        holder.setInitParameter("dbpassword", dbpassword);
         File proceduresFile = new File(proceduresFileName);
         String a;
         if (proceduresFile.isAbsolute()) {

@@ -8,6 +8,8 @@ import java.io.UnsupportedEncodingException;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -15,7 +17,11 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import oracle.jdbc.OracleCallableStatement;
 import oracle.jdbc.OracleConnection;
+import oracle.jdbc.OraclePreparedStatement;
+import oracle.jdbc.OracleTypes;
+import oracle.jdbc.oracore.OracleType;
 import org.json.simple.JSONObject;
 
 public class OraJsonServlet extends HttpServlet {
@@ -25,12 +31,16 @@ public class OraJsonServlet extends HttpServlet {
     Map<String, String> procedures;
     String current_schema;
     String realm;
+    String dbuser;
+    String dbpassword;
 
     @Override
     public void init() {
         this.dburl = getInitParameter("dburl");
         this.current_schema = getInitParameter("current_schema");
         this.realm = getInitParameter("realm");
+        this.dbuser = getInitParameter("dbuser");
+        this.dbpassword = getInitParameter("dbpassword");
         try {
             this.procedures = loadProcedures(getInitParameter("procedures"));
         } catch (IOException ex) {
@@ -54,8 +64,21 @@ public class OraJsonServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        
+       
         String auth = request.getHeader("Authorization");
-        OracleConnection con = authorize(auth);
+        final OracleConnection con;
+        if (!this.realm.equals("")) {
+            con = authorize(auth);
+        } else {
+            try {
+                con = getOracleConnection(this.dbuser, this.dbpassword);
+                setHeaders(request,con);
+            } catch (SQLException ex) {
+                errorReply(response,"can not login to database: " +ex.getMessage());
+                return;
+            }
+        }
 
         if (con == null) {
             response.setHeader("WWW-Authenticate", "BASIC realm=\"" + this.realm + "\"");
@@ -118,12 +141,40 @@ public class OraJsonServlet extends HttpServlet {
             }
         }
     }
+    
+    
+    private void setHeaders(HttpServletRequest request, OracleConnection con) 
+    throws SQLException {
+
+       /*procedure init_cgi_env (num_params in number,
+                           param_name in vc_arr,
+                           param_val  in vc_arr);*/
+        ArrayList<String> headerNames = new ArrayList<>();
+        ArrayList<String> headerValues = new ArrayList<>();
+        Enumeration<String> hn = request.getHeaderNames();
+        while (hn.hasMoreElements()) {
+            String headerName = hn.nextElement();
+            headerNames.add(headerName);
+            headerValues.add(request.getHeader(headerName));
+        }
+
+        try (OracleCallableStatement pstm 
+                = (OracleCallableStatement)con
+                        .prepareCall("begin owa.init_cgi_env(?,?,?); end;")){
+            int len = headerNames.size();
+            pstm.setInt(1,len);
+            pstm.setPlsqlIndexTable(2,headerNames.toArray(new String[0]),len,len,OracleTypes.VARCHAR,1024);
+            pstm.setPlsqlIndexTable(3,headerValues.toArray(new String[0]),len,len,OracleTypes.VARCHAR,1024);
+            pstm.execute();
+        }
+    }
 
     OracleConnection getOracleConnection(String user, String pw) throws SQLException {
         OracleConnection connection = (OracleConnection) DriverManager.getConnection(this.dburl, user, pw);
         if (this.current_schema != null) {
-            Statement s = connection.createStatement();
-            s.execute("ALTER SESSION SET CURRENT_SCHEMA=" + this.current_schema);
+            try(Statement s = connection.createStatement()){
+               s.execute("ALTER SESSION SET CURRENT_SCHEMA=" + this.current_schema);
+            }
         }
         return connection;
     }

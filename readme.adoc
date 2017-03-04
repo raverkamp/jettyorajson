@@ -65,6 +65,8 @@ Basic Authentication. After all this is an experiment.
 The user must have execute rights on the called procedure.
 It is possible to define a current schema, so there is no need for synonyms.
 
+Another option is to set a fixed database user.
+
 Configuration File
 ------------------
 
@@ -86,6 +88,8 @@ property name.
 - +db.X.procedures+ the file the exported procedures
 - +db.X.current_schema+ optional schema for procedure lookup, no need for synonyms!
 - +db.X.path+ the path under which to export the the procedures
+- +db.X.dbuser+ the database user, if dbuser is given than relam must not be given or empty
+- +db.X.dbpassword+ the password for the database user
 
 The procedures that are exported are defined in another properties file, named
 by the +db.X.procedures+ property.

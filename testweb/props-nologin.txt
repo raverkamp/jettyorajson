@@ -1,15 +1,16 @@
 # this should work:
-# http://localhost:9000/html/index.html
+# http://localhost:8000/html/index.html
 
-port=9000
+port=8000
 
 static.a.dir=html
 static.a.wdir=/html
 
 db.a.dburl=jdbc:oracle:thin:@localhost:1521:xe
-db.a.realm=OracleDB
 db.a.procedures=procedures.txt
 db.a.current_schema=user_orajson
 db.a.path=/orajson
+db.a.dbuser=user_orajson
+db.a.dbpassword=user_orajson
 
 log4jconfig=
