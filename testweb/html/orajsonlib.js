@@ -23,6 +23,12 @@ function doJsonPost(url, obj) {
     console.log(req);
     return res;
 }
+
+function orajsoncaller(baseurl) {
+    return function(proc,args) {
+        var res = doJsonPost(baseurl, {procedure: proc, arguments: args});
+    }
+}
 function deepcopy(o) {
     return JSON.parse(JSON.stringify(o));
 }

@@ -17,16 +17,17 @@
         callHeaders();
     });
 
+    var caller = orajsoncaller("/orajson");
     // p1.procedure p(xi number,yi varchar2,zi date,xo out number,yo out varchar2,zo out date) 
     function callproc() {
         var args = {xi: 23, yi: "asas", zi: "2015-12-04"};
-        var res = doJsonPost("/orajson", {procedure: "p1_p", arguments: args});
+        var res = caller("p1_p",args);
         console.log(res);
     }
     
     function callHeaders() {
         var args = {};
-        var res = doJsonPost("/orajson", {procedure: "headers", arguments: args});
+        var res = caller("p1_p",args);
         console.log(res);
     }
 
