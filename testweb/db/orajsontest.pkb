@@ -21,4 +21,14 @@ begin
   headers := res;
 end;
 
+procedure some_error(msg varchar2) is
+begin
+   raise_application_error(-20000,'error:' ||msg);
+end;
+
+procedure user_objects(c out sys_refcursor) is
+begin
+  open c for select * from user_objects;
+end;
+
 end orajsontest;

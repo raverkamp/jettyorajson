@@ -1,2 +1,5 @@
 p1_p=orajsontest.p
 headers=orajsontest.get_headers
+
+some_error=orajsontest.some_error
+user_objects=orajsontest.user_objects

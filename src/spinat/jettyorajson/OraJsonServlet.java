@@ -1,5 +1,6 @@
 package spinat.jettyorajson;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -19,9 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import oracle.jdbc.OracleCallableStatement;
 import oracle.jdbc.OracleConnection;
-import oracle.jdbc.OraclePreparedStatement;
 import oracle.jdbc.OracleTypes;
-import oracle.jdbc.oracore.OracleType;
 import org.json.simple.JSONObject;
 
 public class OraJsonServlet extends HttpServlet {
@@ -64,8 +63,6 @@ public class OraJsonServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
-       
         String auth = request.getHeader("Authorization");
         final OracleConnection con;
         if (!this.realm.equals("")) {
@@ -86,17 +83,29 @@ public class OraJsonServlet extends HttpServlet {
             return;
         }
         try {
-            String jsonstring = request.getParameter("data");
+            BufferedReader r = request.getReader();
+            StringBuilder sb = new StringBuilder();
+            char[] cb = new char[10000];
+            while(true) {
+                int n = r.read(cb);
+                if (n>0) {
+                    sb.append(cb,0,n);
+                } else {
+                    break;
+                }
+            } 
+            String jsonstring = sb.toString();
+            
             if (jsonstring == null || jsonstring.isEmpty()) {
-                errorReply(response, "expecting post parameter \"data\" with JSON data");
+                errorReply(response, "expecting JSON data");
                 return;
             }
             JSONObject m;
             try {
                 org.json.simple.parser.JSONParser p = new org.json.simple.parser.JSONParser();
                 m = (JSONObject) p.parse(jsonstring);
-            } catch (Exception ex) {
-                errorReply(response, "value of post parameter \"data\" must be a JSON object");
+            } catch (org.json.simple.parser.ParseException ex) {
+                errorReply(response, "value must be a JSON object, error:" + ex.toString());
                 return;
             }
             Object o = m.get("procedure");
