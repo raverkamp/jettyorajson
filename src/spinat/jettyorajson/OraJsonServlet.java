@@ -128,7 +128,7 @@ public class OraJsonServlet extends HttpServlet {
             JSONObject args = (JSONObject) o2;
             JSONObject mo = new JSONObject();
             try {
-                Object res = new ProcedureCaller(con).call(realproc, args);
+                Map<String, Object>  res = new ProcedureCaller(con).call(realproc, args);
                 mo = new JSONObject();
                 mo.put("result", res);
             } catch (Exception e) {

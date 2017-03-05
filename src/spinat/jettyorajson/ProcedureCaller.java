@@ -465,7 +465,7 @@ public final class ProcedureCaller {
                 return null;
             } else {
                 int size = b.intValue();
-                ArrayList res = new ArrayList();
+                ArrayList<Object> res = new ArrayList<>();
                 for (int i = 0; i < size; i++) {
                     res.add(this.slottype.readFromResArrays(a));
                 }
