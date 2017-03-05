@@ -549,7 +549,7 @@ public final class ProcedureCaller {
                     } else if (t.equals("V")) {
                         o = a.readString();
                     } else if (t.equals("D")) {
-                        o = a.readDate();
+                        o = Util.dateToString(a.readDate());
                     } else {
                         throw new Error("unknwon column type: " + t);
                     }
