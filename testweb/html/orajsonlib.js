@@ -53,7 +53,7 @@ function doJsonPostAsync(url, obj,success, dbexception, totalfailure) {
                 if (totalfailure) {
                     totalfailure(req);
                 } else {
-                    throw "" + (req);
+                    throw ("" + req);
                 }
             }
         }
