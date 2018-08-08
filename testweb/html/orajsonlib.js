@@ -30,6 +30,13 @@ function orajsoncallersync(baseurl) {
     };
 }
 
+function orajsoncallersync2(baseurl) {
+    return function(proc,args) {
+        var res = doJsonPostSync(baseurl+"/" +proc, args);
+        return res;
+    };
+}
+
 function doJsonPostAsync(url, obj,success, dbexception, totalfailure) {
     //console.log("async", obj);
     var req = new XMLHttpRequest();
@@ -64,10 +71,17 @@ function doJsonPostAsync(url, obj,success, dbexception, totalfailure) {
     req.send(str);
 }
 
-  function orajsoncallerasync(baseurl) {
+function orajsoncallerasync(baseurl) {
     return function(proc,args,success, dbfailure,totalfailure) {
         console.log("args", args);
         doJsonPostAsync(baseurl, {procedure: proc, "arguments": args}, success,dbfailure,totalfailure);
+    };
+}
+
+function orajsoncallerasync2(baseurl) {
+    return function(proc,args,success, dbfailure,totalfailure) {
+        console.log("args", args);
+        doJsonPostAsync(baseurl +"/" +proc,  args, success,dbfailure,totalfailure);
     };
 }
 

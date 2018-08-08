@@ -13,6 +13,7 @@
 
    var scaller = orajsoncallersync("/orajson");
    var acaller = orajsoncallerasync("/orajson");
+   var acaller2 = orajsoncallerasync2("/orajson");
     
     // p1.procedure p(xi number,yi varchar2,zi date,xo out number,yo out varchar2,zo out date) 
     function callproc() {
@@ -48,7 +49,7 @@
     
     function some_error_async() {
         acaller("some_error",{msg:"bla"},function(x) {alert("this should not happen");},
-                function(e) {alert("expected error:" + e)});
+                function(e) {alert("expected error:" + e);});
     }
     addclicker("some_error_async", some_error_async);
     
@@ -64,5 +65,14 @@
     }
     
     addclicker("user_objects",user_objects_async);
+    
+    addclicker("user_objects2", function() {
+        acaller2("user_objects",{}, 
+            function(x) {
+                for (var i=0;i<x.c.length;i++) {
+                    console.log(x.c[i]);
+                }
+            });
+    });
 
 })();

@@ -63,39 +63,46 @@ public class OraJsonServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String auth = request.getHeader("Authorization");
+
         final OracleConnection con;
         if (!this.realm.equals("")) {
+            String auth = request.getHeader("Authorization");
             con = authorize(auth);
+            if (con == null) {
+                response.setHeader("WWW-Authenticate", "BASIC realm=\"" + this.realm + "\"");
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+                return;
+            }
         } else {
             try {
                 con = getOracleConnection(this.dbuser, this.dbpassword);
-                setHeaders(request,con);
             } catch (SQLException ex) {
-                errorReply(response,"can not login to database: " +ex.getMessage());
+                errorReply(response, "can not login to database: " + ex.getMessage());
                 return;
             }
         }
-
-        if (con == null) {
-            response.setHeader("WWW-Authenticate", "BASIC realm=\"" + this.realm + "\"");
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+        try {
+            setHeaders(request, con);
+        } catch (SQLException ex) {
+            errorReply(response, "can not set headers to database: " + ex.getMessage());
+            ex.printStackTrace(System.err);
             return;
         }
+
         try {
             BufferedReader r = request.getReader();
             StringBuilder sb = new StringBuilder();
             char[] cb = new char[10000];
-            while(true) {
+            while (true) {
                 int n = r.read(cb);
-                if (n>0) {
-                    sb.append(cb,0,n);
+                if (n > 0) {
+                    sb.append(cb, 0, n);
                 } else {
                     break;
                 }
-            } 
+            }
             String jsonstring = sb.toString();
-            
+
             if (jsonstring == null || jsonstring.isEmpty()) {
                 errorReply(response, "expecting JSON data");
                 return;
@@ -108,27 +115,39 @@ public class OraJsonServlet extends HttpServlet {
                 errorReply(response, "value must be a JSON object, error:" + ex.toString());
                 return;
             }
-            Object o = m.get("procedure");
-            if (o == null || !(o instanceof String)) {
-                errorReply(response, "expecting a slot \"procedure\" which is a string value in JSON data");
-                return;
+            final String procedureName;
+            final JSONObject args;
+            String pathinfo = request.getPathInfo();
+            if (pathinfo == null || pathinfo.equals("") || pathinfo.equals("/")) {
+                Object o = m.get("procedure");
+                if (o == null || !(o instanceof String)) {
+                    errorReply(response, "expecting a slot \"procedure\" which is a string value in JSON data");
+                    return;
+                }
+                procedureName = (String) m.get("procedure");
+
+                Object o2 = m.get("arguments");
+                if (o2 == null || !(o2 instanceof JSONObject)) {
+                    errorReply(response, "expecting a slot \"arguments\" which is a Object value in JSON data");
+                    return;
+                }
+                args = (JSONObject) o2;
+            } else {
+                if (pathinfo.startsWith("/")) {
+                    pathinfo = pathinfo.substring(1);
+                }
+                procedureName = pathinfo;
+                args = m;
             }
-            String proc = (String) m.get("procedure");
-            String realproc = this.procedures.get(proc);
+            JSONObject mo = new JSONObject();
+            String realproc = this.procedures.get(procedureName);
             if (realproc == null) {
-                errorReply(response, "unknown procedure: " + proc
+                errorReply(response, "unknown procedure: " + procedureName
                         + ", procedure must be added to file " + getInitParameter("procedures"));
                 return;
             }
-            Object o2 = m.get("arguments");
-            if (o2 == null || !(o2 instanceof JSONObject)) {
-                errorReply(response, "expecting a slot \"arguments\" which is a Object value in JSON data");
-                return;
-            }
-            JSONObject args = (JSONObject) o2;
-            JSONObject mo = new JSONObject();
             try {
-                Map<String, Object>  res = new ProcedureCaller(con).call(realproc, args);
+                Map<String, Object> res = new ProcedureCaller(con).call(realproc, args);
                 mo.put("result", res);
             } catch (Exception e) {
                 mo.put("error", e.toString());
@@ -149,12 +168,11 @@ public class OraJsonServlet extends HttpServlet {
             }
         }
     }
-    
-    
-    private void setHeaders(HttpServletRequest request, OracleConnection con) 
-    throws SQLException {
 
-       /*procedure init_cgi_env (num_params in number,
+    private void setHeaders(HttpServletRequest request, OracleConnection con)
+            throws SQLException {
+
+        /*procedure init_cgi_env (num_params in number,
                            param_name in vc_arr,
                            param_val  in vc_arr);*/
         ArrayList<String> headerNames = new ArrayList<>();
@@ -166,22 +184,22 @@ public class OraJsonServlet extends HttpServlet {
             headerValues.add(request.getHeader(headerName));
         }
 
-        try (OracleCallableStatement pstm 
-                = (OracleCallableStatement)con
-                        .prepareCall("begin owa.init_cgi_env(?,?,?); end;")){
-            int len = headerNames.size();
-            pstm.setInt(1,len);
-            pstm.setPlsqlIndexTable(2,headerNames.toArray(new String[0]),len,len,OracleTypes.VARCHAR,1024);
-            pstm.setPlsqlIndexTable(3,headerValues.toArray(new String[0]),len,len,OracleTypes.VARCHAR,1024);
-            pstm.execute();
-        }
+        try (OracleCallableStatement pstm
+                = (OracleCallableStatement) con
+                        .prepareCall("begin owa.init_cgi_env(?,?,?); end;")) {
+                    int len = headerNames.size();
+                    pstm.setInt(1, len);
+                    pstm.setPlsqlIndexTable(2, headerNames.toArray(new String[0]), len, len, OracleTypes.VARCHAR, 1024);
+                    pstm.setPlsqlIndexTable(3, headerValues.toArray(new String[0]), len, len, OracleTypes.VARCHAR, 1024);
+                    pstm.execute();
+                }
     }
 
     OracleConnection getOracleConnection(String user, String pw) throws SQLException {
         OracleConnection connection = (OracleConnection) DriverManager.getConnection(this.dburl, user, pw);
         if (this.current_schema != null) {
-            try(Statement s = connection.createStatement()){
-               s.execute("ALTER SESSION SET CURRENT_SCHEMA=" + this.current_schema);
+            try (Statement s = connection.createStatement()) {
+                s.execute("ALTER SESSION SET CURRENT_SCHEMA=" + this.current_schema);
             }
         }
         return connection;

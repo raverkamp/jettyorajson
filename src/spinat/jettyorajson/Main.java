@@ -185,7 +185,7 @@ public class Main {
         }
         holder.setInitParameter("procedures", a);
         msg("mounting under path: " + wpath);
-        handler.addServletWithMapping(holder, wpath);
+        handler.addServletWithMapping(holder, wpath + "/*");
 
     }
 }
