@@ -1,6 +1,7 @@
 create user user_orajson identified by user_orajson;
 grant resource to user_orajson;
 grant connect to user_orajson;
+grant create session to user_orajson;
 
 --connect  user_orajson/user_orajson
 create type number_array as table of number;
