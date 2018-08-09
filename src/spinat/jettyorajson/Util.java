@@ -20,7 +20,7 @@ public class Util {
         if (s == null || s.equals("")) {
             return null;
         }
-        if (s.length() == 10) {
+        if (s.length() <= 10) {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
             try {
                 return sdf.parse(s);

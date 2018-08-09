@@ -170,6 +170,7 @@ public class Main {
         }
         String proceduresFileName = props.getProperty(prefix + "procedures", "");
         String allowOrigin = props.getProperty(prefix + "allow-origin","");
+        String tryWithoutTranslation = props.getProperty(prefix + "try-without-translation","false");
 
         ServletHolder holder = new ServletHolder(OraJsonServlet.class);
         holder.setInitParameter("dburl", dburl);
@@ -178,6 +179,7 @@ public class Main {
         holder.setInitParameter("dbuser",dbuser);
         holder.setInitParameter("dbpassword", dbpassword);
         holder.setInitParameter("allow-origin", allowOrigin);
+        holder.setInitParameter("try-without-translation", tryWithoutTranslation);
         File proceduresFile = new File(proceduresFileName);
         String a;
         if (proceduresFile.isAbsolute()) {

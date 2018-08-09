@@ -33,6 +33,7 @@ public class OraJsonServlet extends HttpServlet {
     String dbuser;
     String dbpassword;
     String allowOrigin;
+    boolean tryWithoutTranslation;
 
     @Override
     public void init() {
@@ -47,6 +48,7 @@ public class OraJsonServlet extends HttpServlet {
             throw new RuntimeException(ex);
         }
         this.allowOrigin = getInitParameter("allow-origin");
+        this.tryWithoutTranslation = "true".equals(getInitParameter("try-without-translation"));
     }
 
     void errorReply(HttpServletResponse response, String txt) throws IOException {
@@ -64,9 +66,9 @@ public class OraJsonServlet extends HttpServlet {
     }
 
     private void setAccessControlHeaders(HttpServletResponse resp) {
-        resp.setHeader("Access-Control-Allow-Origin",  this.allowOrigin);
+        resp.setHeader("Access-Control-Allow-Origin", this.allowOrigin);
         resp.setHeader("Access-Control-Allow-Methods", "POST");
-        resp.setHeader("Access-Control-Allow-Headers" , "Content-Type");
+        resp.setHeader("Access-Control-Allow-Headers", "Content-Type");
     }
 
     // if the input is correct, a post parameter data which is JSON object 
@@ -158,9 +160,13 @@ public class OraJsonServlet extends HttpServlet {
             JSONObject mo = new JSONObject();
             String realproc = this.procedures.get(procedureName);
             if (realproc == null) {
-                errorReply(response, "unknown procedure: " + procedureName
-                        + ", procedure must be added to file " + getInitParameter("procedures"));
-                return;
+                if (!this.tryWithoutTranslation) {
+                    errorReply(response, "unknown procedure: " + procedureName
+                            + ", procedure must be added to file " + getInitParameter("procedures"));
+                    return;
+                } else {
+                    realproc = procedureName;
+                }
             }
             try {
                 Map<String, Object> res = new ProcedureCaller(con).call(realproc, args);

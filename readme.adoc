@@ -85,11 +85,15 @@ It must (obviously) not contain a "." and the whole string must be a allowed
 property name.
 - +db.X.dburl+ the url for the database connection named X
 - +db.X.realm+ the realm for X, authentication is done with basic authentication
-- +db.X.procedures+ the file the exported procedures
+- +db.X.procedures+ the file the exported procedures, but see below
 - +db.X.current_schema+ optional schema for procedure lookup, no need for synonyms!
 - +db.X.path+ the path under which to export the the procedures
 - +db.X.dbuser+ the database user, if dbuser is given than relam must not be given or empty
 - +db.X.dbpassword+ the password for the database user
+- +db.X.allow-origin+ the allowed origins to call, this be used as Access-Control-Allow-Origin header
+- +db.X.try-without-translation+ if this is true, it is possible to call procedures by their name directly, 
+you should only use this option during development
+
 
 The procedures that are exported are defined in another properties file, named
 by the +db.X.procedures+ property.

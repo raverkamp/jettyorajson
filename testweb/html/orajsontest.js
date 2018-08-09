@@ -14,6 +14,7 @@
    var scaller = orajsoncallersync("/orajson");
    var acaller = orajsoncallerasync("/orajson");
    var acaller2 = orajsoncallerasync2("/orajson");
+   var scaller2 = orajsoncallersync2("/orajson");
     
     // p1.procedure p(xi number,yi varchar2,zi date,xo out number,yo out varchar2,zo out date) 
     function callproc() {
@@ -74,5 +75,44 @@
                 }
             });
     });
+    
+    
+    
+    function p1_p(scaller) {
+        var a = scaller("p1.p", {xi:1, yi:"bla", zi: "2018-05-06"});
+        console.assert(a.result.xo === 2);
+        console.assert(a.result.yo === "blabla");
+        console.assert(a.result.zo === "2018-05-07 00:00:00");
+    }
+    
+    function p1_p2(scaller) {
+        var r1 = {x:12, y:"trump", z: "2018-5-3"};
+        var r2 = scaller("p1.p2", {a: r1}).result.b;
+        console.assert(r2.x === r1.x+1,"x");
+        console.assert(r2.y === r1.y+r1.y,"y");
+        console.assert(r2.z === "2018-05-04 00:00:00","z");
+    }
+    
+    function p1_p3(scaller) {
+        var t1 = [{x:12, y:"trump", z: "2018-5-3"}, {x:11000, y:"donald", z: "2012-1-3"}];
+        var t2 = scaller("p1.p3", {a: t1}).result.b;
+        console.assert(t2[0].x === t1[0].x+1, "x");
+        console.assert(t2[0].y === t1[0].y + t1[0].y,"y");
+        console.assert(t2[0].z === "2018-05-04 00:00:00","z");
+        
+        console.assert(t2[1].x === t1[1].x+1, "x");
+        console.assert(t2[1].y === t1[1].y + t1[1].y,"y");
+        console.assert(t2[1].z === "2012-01-04 00:00:00","z");
+    }
+    
+    function p1_tests() {
+        p1_p(scaller2);
+        p1_p2(scaller2);
+        p1_p3(scaller2);
+    }
+    
+    addclicker("p1_tests", p1_tests);
+    
+    
 
 })();
