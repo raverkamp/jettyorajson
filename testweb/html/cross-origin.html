@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Index</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <div>Willkommen!</div>
+        This page must be loaded as <b>http://localhost:8000/html/cross-origin.html</b>
+        <ul>
+            <li><button id=test1>Test1</button></li>
+        </ul>
+        <script src="./orajsonlib.js"></script>
+        <script>
+            "use strict";
+            function addclicker(id, proc) {
+                var obj = document.getElementById(id);
+                obj.addEventListener("click", proc);
+            };
+            function doit() {
+                var acaller2 = orajsoncallerasync2("http://127.0.0.1:8000/orajson");
+                acaller2("user_objects", {},
+                        function (x) {
+                            for (var i = 0; i < x.c.length; i++) {
+                                console.log(x.c[i]);
+                            }
+                        });
+            }
+            addclicker("test1", doit);
+        </script>
+    </body>
+</html>

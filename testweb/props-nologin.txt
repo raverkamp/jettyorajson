@@ -12,5 +12,6 @@ db.a.current_schema=user_orajson
 db.a.path=/orajson
 db.a.dbuser=user_orajson
 db.a.dbpassword=user_orajson
+db.a.allow-origin=http://localhost:8000
 
 log4jconfig=

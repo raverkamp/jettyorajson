@@ -11,5 +11,6 @@ db.a.realm=OracleDB
 db.a.procedures=procedures.txt
 db.a.current_schema=user_orajson
 db.a.path=/orajson
+db.a.allow-orign=http://localhost:8000
 
 log4jconfig=

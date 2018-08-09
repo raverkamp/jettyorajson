@@ -32,6 +32,7 @@ public class OraJsonServlet extends HttpServlet {
     String realm;
     String dbuser;
     String dbpassword;
+    String allowOrigin;
 
     @Override
     public void init() {
@@ -45,6 +46,7 @@ public class OraJsonServlet extends HttpServlet {
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
+        this.allowOrigin = getInitParameter("allow-origin");
     }
 
     void errorReply(HttpServletResponse response, String txt) throws IOException {
@@ -52,6 +54,19 @@ public class OraJsonServlet extends HttpServlet {
         response.setContentType("text/text;charset=UTF-8");
         response.setCharacterEncoding("UTF-8");
         response.getWriter().append("error in request: " + txt);
+    }
+
+    @Override
+    protected void doOptions(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        setAccessControlHeaders(resp);
+        resp.setStatus(HttpServletResponse.SC_OK);
+    }
+
+    private void setAccessControlHeaders(HttpServletResponse resp) {
+        resp.setHeader("Access-Control-Allow-Origin",  this.allowOrigin);
+        resp.setHeader("Access-Control-Allow-Methods", "POST");
+        resp.setHeader("Access-Control-Allow-Headers" , "Content-Type");
     }
 
     // if the input is correct, a post parameter data which is JSON object 
@@ -64,6 +79,7 @@ public class OraJsonServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+        setAccessControlHeaders(response);
         final OracleConnection con;
         if (!this.realm.equals("")) {
             String auth = request.getHeader("Authorization");

@@ -169,6 +169,7 @@ public class Main {
             current_schema = null;
         }
         String proceduresFileName = props.getProperty(prefix + "procedures", "");
+        String allowOrigin = props.getProperty(prefix + "allow-origin","");
 
         ServletHolder holder = new ServletHolder(OraJsonServlet.class);
         holder.setInitParameter("dburl", dburl);
@@ -176,6 +177,7 @@ public class Main {
         holder.setInitParameter("current_schema", current_schema);
         holder.setInitParameter("dbuser",dbuser);
         holder.setInitParameter("dbpassword", dbpassword);
+        holder.setInitParameter("allow-origin", allowOrigin);
         File proceduresFile = new File(proceduresFileName);
         String a;
         if (proceduresFile.isAbsolute()) {
