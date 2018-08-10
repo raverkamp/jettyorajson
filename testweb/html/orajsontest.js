@@ -105,14 +105,51 @@
         console.assert(t2[1].z === "2012-01-04 00:00:00","z");
     }
     
+    function p1_p4(scaller) {
+        var t1 = [[{x:12, y:"trump", z: "2018-09-30 00:00:00"}, 
+                   {x:11000, y:"donald", z: "2012-12-25 00:00:00"}],
+                  [{x:12, y:"trump", z: "2018-05-08 00:00:00"}, 
+                   {x:11000, y:"donald", z: "2012-01-03 00:00:00"}]];
+        var t2 = scaller("p1.p4", {a: t1}).result.a;
+        console.assert(deepCompare(t1,t2),"deep");
+        
+        {
+            let t = [];
+            var res = scaller("p1.p4", {a: t}).result.a;
+            console.assert(deepCompare(t,res),"deep");
+        }
+        {
+            let t = [null];
+            var res = scaller("p1.p4", {a: t}).result.a;
+            console.assert(deepCompare(t,res),"deep");
+        }
+        {
+            let t = null;
+            var res = scaller("p1.p4", {a: t}).result.a;
+            console.assert(deepCompare(t,res),"deep");
+        }
+    }
+    
+    function p1_p5(scaller) {
+        var t = ["a","b","w",null,"3"];
+        var res = scaller("p1.p5", {a: t}).result.b;
+        console.assert(deepCompare(t,res),"p1_p5");
+    }
+    
+     function p1_p6(scaller) {
+        var res = scaller("p1.p6", {}).result;
+        console.assert(deepCompare({},res),"p1_p5");
+    }
+    
     function p1_tests() {
         p1_p(scaller2);
         p1_p2(scaller2);
         p1_p3(scaller2);
+        p1_p4(scaller2);
+        p1_p5(scaller2);
+        p1_p6(scaller2);
     }
     
     addclicker("p1_tests", p1_tests);
     
-    
-
 })();
