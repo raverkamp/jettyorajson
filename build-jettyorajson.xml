@@ -8,6 +8,7 @@
     <property name="build" location="build"/>
     <property name="dist"  location="dist"/>
     <property name="libs" location="libs"/>
+    <property name="javaplsql" location="../javaplsql"/>
     <property name="jre8" value="${env.jre8}"/>
   
     <target name="clean"
@@ -30,12 +31,12 @@
            debug="true">
             <compilerarg value="-Xlint:unchecked"/>
             <classpath>
-                <pathelement location="${libs}/ojdbc6_g.jar"/>
+                <pathelement location="${libs}/ojdbc8.jar"/>
                  <pathelement location="${libs}/servlet-api.jar"/>
                  <pathelement location="${libs}/jetty-all-9.0.6.v20130930.jar"/>
                  <pathelement location="${libs}/json_simple-1.1.jar"/>
                  <pathelement location="${libs}/log4j-1.2.17.jar"/>
-                 <pathelement location="${libs}/ucp.jar"/>
+                 <pathelement location="${javaplsql}/dist/javaplsql.jar"/>
             </classpath>
         </javac>
     </target>
@@ -43,17 +44,17 @@
     <target name="dist" depends="compile"
           description="generate the distribution, with the main jar and a manifest which references the oracle jdbc file" >
         <mkdir dir="${dist}/jettyorajson"/>
-        <copy file="${libs}/ojdbc6_g.jar" todir="${dist}/jettyorajson"/>
+        <copy file="${libs}/ojdbc8.jar" todir="${dist}/jettyorajson"/>
         <copy file="${libs}/servlet-api.jar" todir="${dist}/jettyorajson"/>
         <copy file="${libs}/jetty-all-9.0.6.v20130930.jar" todir="${dist}/jettyorajson"/>
         <copy file="${libs}/json_simple-1.1.jar" todir="${dist}/jettyorajson"/>
         <copy file="${libs}/log4j-1.2.17.jar" todir="${dist}/jettyorajson"/>
-        <copy file="${libs}/ucp.jar" todir="${dist}/jettyorajson"/>
+        <copy file="${javaplsql}/dist/javaplsql.jar" todir="${dist}/jettyorajson"/>
         <jar jarfile="${dist}/jettyorajson/main.jar" basedir="${build}">
             <manifest>
                 <attribute name="Main-Class"
                    value="spinat.jettyorajson.Main"/>
-                <attribute name="Class-Path" value="./jetty-all-9.0.6.v20130930.jar ./log4j-1.2.17.jar ./ojdbc6_g.jar ./servlet-api.jar ./ucp.jar ./json_simple-1.1.jar"/>
+                <attribute name="Class-Path" value="./jetty-all-9.0.6.v20130930.jar ./log4j-1.2.17.jar ./ojdbc8.jar ./servlet-api.jar ./json_simple-1.1.jar ./javaplsql.jar"/>
             </manifest>
         </jar>
     </target>    

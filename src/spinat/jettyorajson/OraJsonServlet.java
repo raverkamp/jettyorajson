@@ -169,7 +169,7 @@ public class OraJsonServlet extends HttpServlet {
                 }
             }
             try {
-                Map<String, Object> res = new ProcedureCaller(con).call(realproc, args);
+                Map<String, Object> res = new spinat.javaplsql.ProcedureCaller(con, true, true).call(realproc, args);
                 mo.put("result", res);
             } catch (Exception e) {
                 mo.put("error", e.toString());

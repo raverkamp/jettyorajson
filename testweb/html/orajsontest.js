@@ -80,14 +80,15 @@
     
     function p1_p(scaller) {
         var a = scaller("p1.p", {xi:1, yi:"bla", zi: "2018-05-06"});
-        console.assert(a.result.xo === 2);
-        console.assert(a.result.yo === "blabla");
-        console.assert(a.result.zo === "2018-05-07 00:00:00");
+        console.assert(a.result.xo === 2,"p1_p xo");
+        console.assert(a.result.yo === "blabla", "p1_p yo");
+        console.assert(a.result.zo === "2018-05-07 00:00:00","p1_p zo",a.result.zo);
     }
     
     function p1_p2(scaller) {
         var r1 = {x:12, y:"trump", z: "2018-5-3"};
         var r2 = scaller("p1.p2", {a: r1}).result.b;
+        console.log(r2);
         console.assert(r2.x === r1.x+1,"x");
         console.assert(r2.y === r1.y+r1.y,"y");
         console.assert(r2.z === "2018-05-04 00:00:00","z");
