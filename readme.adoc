@@ -1,7 +1,7 @@
 JettyOraJson
 ============
 
-The main part of JettyOraJson is a Java servlet whcih translates JSON HTTP calls
+The main part of JettyOraJson is a Java servlet which translates JSON HTTP calls
 to Oracle PL/SQL proecdure call. The arguments of procedures can be complex types,
 like records and tables.
 This servlet is embedded into a a simple application
@@ -12,10 +12,8 @@ Exposing your Oracle database to the internet via a servlet is
 a bit scary. Still is this what the Orcale PL/SQL Web Toolkit does.
 For real production use one would use another webserver and use HTTPS.
 
-
 The servlet is called with a HTTP post method,
-there is one parameter "data". The value for this parameter is a JSON encoded 
-Javascript object. 
+the content value is a JSON encoded Javascript object. 
 
 .The Javascript object has the follwoing fields:
 procedure::
@@ -27,6 +25,9 @@ in SQL statements.
 
 arguments::
 the arguments, an object. The arguments are passed by name.
+
+Optionally the procedure name is append at the servelet path and the content 
+of the message is the arguments as dictionary (Json encoded).
 
 .The text returned from the post method is a JSON object with the fields:
 result::
@@ -100,4 +101,3 @@ by the +db.X.procedures+ property.
 
 Each property defines an exported procedure, the property name defines 
 the exported name. The value defines the database procedure.
- 
