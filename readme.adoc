@@ -12,6 +12,8 @@ Exposing your Oracle database to the internet via a servlet is
 a bit scary. Still is this what the Orcale PL/SQL Web Toolkit does.
 For real production use one would use another webserver and use HTTPS.
 
+To build this system, you will need  the project *javaplsql* from this Github account.
+
 The servlet is called with a HTTP post method,
 the content value is a JSON encoded Javascript object. 
 
