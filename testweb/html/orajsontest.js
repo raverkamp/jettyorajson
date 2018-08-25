@@ -137,19 +137,100 @@
         console.assert(deepCompare(t,res),"p1_p5");
     }
     
-     function p1_p6(scaller) {
+    function p1_p6(scaller) {
         var res = scaller("p1.p6", {}).result;
         console.assert(deepCompare({},res),"p1_p5");
     }
     
-    function p1_tests() {
-        p1_p(scaller2);
-        p1_p2(scaller2);
-        p1_p3(scaller2);
-        p1_p4(scaller2);
-        p1_p5(scaller2);
-        p1_p6(scaller2);
+    function p1_f7(scaller) {
+        var x = {x: 123, y: "roland", z: "2012-01-03 00:00:00"};
+        var res = scaller("p1.f7",{a:123, b: "roland", c: "2012-01-03 00:00:00"}).result;
+        console.assert(deepCompare({RETURN: x},res),"p1.f7");
     }
+    
+    // arg is anonymous record type
+    function p1_p7(scaller) {
+        var res = scaller("p1.p7",{x:"heinz"});
+        console.assert(deepCompare(res.result),undefined);
+        console.assert(res.error.search("anonymous record types")>=0);
+    }
+    
+    // p8 bool in bool out
+    function p1_p8(scaller) {
+        var res = scaller("p1.p8", {x:true});
+        console.assert(deepCompare(res.result, {y: false}));
+    }
+    
+    //procedure p9(x1 pls_integer,y1 out pls_integer,x2 natural,y2 out natural)
+    function p1_p9(scaller) {
+        let a = {x1:123132, x2:6567};
+        var res = scaller("p1.p9",a).result;
+        console.assert(deepCompare(res,{y1: (-a.x1), y2: a.x2 +10}));
+    }
+    
+    //procedure raise_error(errnum integer,txt varchar2) 
+    function p1_raise_error(scaller) {
+        var res = scaller("p1.raise_error", {errnum: -20123, txt: "quatsch"});
+        console.assert(res.error.search("20123")>=0);
+        console.assert(res.error.search("quatsch")>=0);
+    }
+    
+    //procedure pcursor1 (n number,v varchar2,d date,c out sys_refcursor) is
+    function p1_pcursor1(scaller) {
+        var res = scaller("p1.pcursor1", {n:234.125, v:"popel",d:"2012-01-03 12:43:09"}).result;
+        console.assert(deepCompare(res,{c:[{a:"a", b:1,c:"2001-01-05 00:00:00"},
+            {a:"popel", b:234.125, c:"2012-01-03 12:43:09"}]}));   
+    }
+    
+    // TYPE return_cur IS REF CURSOR RETURN refcursor_rec;
+    // procedure pcursor2(n number,v varchar2,d date,c out return_cur);
+    function p1_pcursor2(scaller) {
+        var res = scaller("p1.pcursor2", {n:234.125, v:"popel",d:"2012-01-03 12:43:09"}).result;
+        console.assert(deepCompare(res,{c:[{v:"a", n:1, d:"2001-01-05 00:00:00"},
+            {v:"popel", n:234.125, d:"2012-01-03 12:43:09"}]}));   
+    }
+    
+    //procedure pcursor3(c out return_cur2)
+    function p1_pcursor3(scaller) {
+        var res = scaller("p1.pcursor3",{});
+        console.assert(deepCompare(res.result),undefined);
+        console.assert(res.error.search("anonymous record types")>=0);
+    }
+    
+    // type tabv is table of varchar2(200) index by varchar2(200);
+    // type tabi is table of varchar2(200) index by binary_integer;
+    // procedure pindex_tab(ai tabv,bi tabi,ao out tabv,bo out tabi) 
+    function p1_pindex_tab(scaller) {
+       const ai = {"a" :"A1", "x": "X1", "8": "81"};
+       const bi = { 0: "X1", 13: "81"};
+       bi[-20]= "A1";
+       const res = scaller("p1.pindex_tab",{ai:ai, bi:bi}).result;
+       console.assert(deepCompare(res.ao,{"xa" :"A1y", "xx": "X1y", "x8": "81y"}));
+       const l = {0: "X1y", 26: "81y"};
+       l[-40] = "A1y";
+       console.assert(deepCompare(res.bo,l));
+    }
+    
+    // procedure pindex_tab2(x in out tabvv) 
+    function p1_pindex_tab2(scaller) {
+        const a = {"a": {"b": "c", "x":"y", "aas": null}, "1123":{"q":"78", "w": "fgh", "df":"roland"}};
+        const res = scaller("p1.pindex_tab2", {"x":a}).result;
+        console.assert(deepCompare(a,res.x));
+    }
+    
+    function p1_tests() {
+        var l = [p1_p, p1_p2, p1_p3, p1_p4, p1_p5, p1_p6, p1_f7, p1_p7, p1_p8,
+        p1_p9, p1_raise_error, p1_pcursor1, p1_pcursor2, p1_pcursor3, p1_pindex_tab,
+        p1_pindex_tab2];
+        for(var i =0;i<l.length;i++) {
+            let f = l[i];
+            let fn = ""+l[i] +"\n";
+            let p = fn.indexOf("\n");
+            console.log(fn.substring(0,p));
+            f(scaller2);
+        }
+    }
+    
     
     addclicker("p1_tests", p1_tests);
     

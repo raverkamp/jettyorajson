@@ -83,14 +83,16 @@ end;
 procedure pcursor1 (n number,v varchar2,d date,c out sys_refcursor) is
 begin
   open c for select 'a' as a,1 as b, date '2001-1-5' as c from dual
-                  union all select v,n,d from dual;
+                  union all select v,n,d from dual
+                  order by 1;
 end;
 
 procedure pcursor2(n number,v varchar2,d date,c out return_cur) is
 
 begin
   open c for select 1 as n,'a' as v, date '2001-1-5' as d from dual
-                  union all select n,v,d from dual;
+                  union all select n,v,d from dual
+                  order by 1;
 end;
 
 procedure pcursor3(c out return_cur2) is
